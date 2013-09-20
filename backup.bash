@@ -5,6 +5,7 @@
 # exit 1: permission error
 # exit 2: parameter error
 # exit 3: invalid directory/file
+# exit 4: external program failed 
 
 LOGTIME=$(date '+%c');
 STARTTIME=$(date '+%s');
@@ -44,11 +45,11 @@ if [ $# -lt 4 ] || [ $# -gt 5 ] ; then
 fi
 
 backup_name=$1;
-backu_origin=$2;
+backup_origin=$2;
 backup_destination=$3;
 backup_fallback=$4;
 backup_tmp="/tmp";
-backup_log="SCRIPTLOGDIR/$backup_name.log";
+backup_log="$SCRIPTLOGDIR/$backup_name.log";
 fallback_mode=false;
 
 if [ $# -gt 4 ] ; then
@@ -108,18 +109,36 @@ fi
 
 #executing tar with xz to tmp file
 file_name="$backup_name$DATE.tar.xz";
-tmp_file="$backup_tmp/file_name.tmp";
-tar -cJPF $backup_origin $tmp_file;
+tmp_file="$backup_tmp/$file_name.tmp";
+(tar -cJf $tmp_file $backup_origin);
+
+LOGTIME=$(date '+%c');
+
+#checking if compression was sucessful
+if [ ! -f $tmp_file ]; then
+	echo "[CRIT] [$LOGTIME] The archive could not be retrieved at the expected location '$tmp_file'. Tar seem to have failed !" >> $backup_log;
+	exit 4;
+fi
 
 #moving tmp file to final directory
 if [ $fallback_mode ]; then
-	(cd $backup_fallback; mv $tmp_file $file_name);
+	cd $backup_fallback;
 else
-	(cd $backup_destination; mv $tmp_file $file_name);
+	cd $backup_destination;
 fi
+
+#Warning about an overwrite
+if [ -f $file_name ]; then
+	echo "[WARN] [$LOGTIME] The destination folder already contains a backup with the same file name ! Overwriting the file !" >> $backup_log;
+fi
+echo "[INFO] [$LOGTIME] Moving the archive from '$tmp_file' to '$(pwd)/$file_name'" >> $backup_log;
+mv $tmp_file $file_name
+
 
 #checking for older backups in the fallback directory to move
 if [ ! $fallback_mode ]; then
 	(cd $backup_fallback; mv $backup_name* $backup_destination );
 fi
+
+exit 0;
 
