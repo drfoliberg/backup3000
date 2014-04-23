@@ -73,4 +73,4 @@ done
 
 LOGTIME=$(date '+%c');
 echo "[INFO] [$LOGTIME] Exiting script cleany.";
-exit(0);
+exit 0;
