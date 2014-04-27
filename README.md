@@ -12,5 +12,5 @@ Files should be archives.
 
 Simple usage exemple :
 ```
-tarMover.bash "/home/user/tobackup" "/media/user/network_share/dumps" &>> /home/user/log/my.log
+tarMover.bash "/home/user/tobackup" "/media/user/network_share/dumps" >> /home/user/log/my.log 2>&1
 ```
