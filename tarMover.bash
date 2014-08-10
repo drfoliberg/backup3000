@@ -46,7 +46,7 @@ fi
 
 # check destination can be written
 if [ ! -w $DESTINATION ]; then
-	echo "[CRIT] [$LOGTIME] The source directory '$DESTINATION' is not writable !";
+	echo "[CRIT] [$LOGTIME] The destination directory '$DESTINATION' is not writable !";
     exit 1;
 fi
 
